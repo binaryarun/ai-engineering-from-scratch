@@ -39,5 +39,6 @@ Learning AI engineering for research. Build goal: not sure yet.
 | Date | Lesson | Quiz | Note |
 |------|--------|------|------|
 | 2026-10-01 | 0.01 Dev Environment | - | uv + venv + numpy/matplotlib/jupyter; PyTorch 2.14.1, MPS available |
+| 2026-10-01 | 0.02 Git & Collaboration | - | Fork + upstream remote, SSH origin, pushed main, .gitignore for model files |
 
 ## Review queue
