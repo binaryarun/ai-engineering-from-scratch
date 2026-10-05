@@ -50,6 +50,8 @@ Learning AI engineering for research. Build goal: not sure yet.
 | 2026-10-01 | 0.10 Terminal & Shell | - | Concepts covered; uses WezTerm splits instead of tmux (tmux only needed on remote Linux GPU boxes) |
 | 2026-10-01 | 0.11 Linux for AI | - | Concepts covered; hands-on exercises not run (no Linux box; SSH/tmux/apt for later) |
 | 2026-10-01 | 0.12 Debugging & Profiling | - | Concepts covered; debug_tools.py exercises not confirmed. Phase 0 complete |
+| 2026-10-02 | 1.01 Linear Algebra Intuition | - | Understood; notes in notes/phase-01-math-foundations.md |
+| 2026-10-05 | 1.02 Vectors, Matrices & Operations | - | Understood via beach example; transpose/inverse practice still open; notes in notes/phase-01-math-foundations.md |
 
 ## Review queue
 - 0.04 APIs & Keys (get an API key before Phase 11)

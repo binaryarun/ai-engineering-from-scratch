@@ -106,4 +106,64 @@ One-sentence answer: *"A matrix-vector product mixes the input numbers using lea
 5. Layer 1 and 2 above with `x = [1, 0, 2]`? (layer 1: `[-4.5, 0.2]` -> ReLU `[0, 0.2]`; layer 2: 3)
 
 ## 1.02 onwards
-(to be added as I finish each lesson)
+(1.03 onwards to be added as I finish each lesson)
+
+## Lesson 1.02 Vectors, Matrices & Operations
+
+### Big idea
+A matrix is a grid of numbers. In AI it is a set of detectors: each row looks at the input and produces one number. Stacking matrices (with a bit of non-linearity) gives a neural network.
+
+### Basic operations
+- Add / subtract: match positions, same shapes only.
+- Multiply by a number (`A * 3`): every entry times 3.
+- Element-wise (`A * B`): multiply matching positions. Example: `[[1,2],[3,4]] * [[5,6],[7,8]] = [[5,12],[21,32]]`.
+- Matrix multiply (`A @ B`): row times column, then add. Same example gives `[[19,22],[43,50]]`. These are NOT the same thing: `*` is position by position, `@` is row-by-column.
+- Shape rule: `(m x n) @ (n x p) = (m x p)`. The two middle numbers must match; the outer two are the result.
+
+### Transpose (`A^T`)
+- Rows become columns. Shape flips from `m x n` to `n x m`.
+- Diagonal stays; the other numbers mirror across it.
+- `[[4,7],[2,6]]^T = [[4,2],[7,6]]`. `2x3` becomes `3x2`.
+
+### Inverse (`A^-1`)
+- Meaning: the "undo" matrix. Like `1/5` undoes `5`. `A @ A^-1 = I` (identity).
+- The `-1` is just part of the name. Nothing is multiplied by -1.
+- 2x2 recipe for `[[a,b],[c,d]]`:
+  1. det = `ad - bc`
+  2. Swap the diagonal numbers (`a` and `d`)
+  3. Flip the sign of `b` and `c` but leave them in their own spots
+  4. Divide every entry by det
+- Worked example: `[[4,7],[2,6]]`: det = 24 - 14 = 10; swapped = `[[6,-7],[-2,4]]`; divide by 10 gives `[[0.6,-0.7],[-0.2,0.4]]`. Check: `A @ A^-1 = [[1,0],[0,1]]`.
+- Common slip: putting `-b` and `-c` in swapped spots (that gives the transpose of the answer).
+- Transpose vs inverse: transpose keeps the diagonal and swaps the others; inverse swaps the diagonal and keeps the others (with signs flipped).
+- det = 0 means no inverse (singular matrix).
+- Bigger matrices: transpose works the same at any size. Inverse only exists for square matrices, and the 2x2 shortcut does not extend; use row reduction by hand or a computer function. Diagonal-only matrix: just flip each diagonal number to `1/number`. In AI we rarely compute inverses directly.
+
+### Neural network layer: the beach example
+Question: go to the beach? Inputs (0 to 1): sunny, windy, crowded. Two judges (layer 1) and one decision-maker (layer 2).
+- Judge A "nice weather": weights sunny +1, windy -1, crowded 0, bias 0.
+- Judge B "peace and quiet": weights crowded -1, others 0, bias +0.5.
+- ReLU: if a judge's number is negative, the judge goes silent (0). Positive stays.
+- Decision-maker: `1 x A + 0.5 x B`.
+- Every layer repeats three moves: multiply by weights, add bias, apply ReLU.
+
+| Day | A | B | After ReLU | Score |
+|---|---|---|---|---|
+| sunny 0.9, windy 0.2, crowded 0.8 | 0.7 | -0.3 | 0.7, 0 | 0.7 |
+| sunny 0.9, windy 0.2, crowded 0.1 | 0.7 | 0.4 | 0.7, 0.4 | 0.9 |
+| sunny 0.5, windy 0.6, crowded 0.3 | -0.1 | 0.2 | 0, 0.2 | 0.1 (stay home) |
+
+Mistakes I made (watch for these):
+- Adding the raw inputs instead of multiplying each by its weight first.
+- Forgetting a negative weight means "more of this makes the judge unhappier".
+- Using the number before ReLU in the next layer; the next layer only sees the after-ReLU numbers.
+- Adding a weight (0.5) instead of multiplying by it.
+
+### Reading the `matrices.py` output
+- Weight matrix demo: `W = [[1,0,0],[0,1,0],[0.5,0.5,0]]`, `x = [0.8,0.6,0.1]` gives `[0.8, 0.6, 0.7]`. Row 0 copies feature 0, row 1 copies feature 1, row 2 averages them, and the third input is ignored (zero column).
+- Forward pass shapes: `x (3,1)`, `W1 (4,3)`, `W2 (2,4)`. Layer 1: `(4x3)@(3x1)+(4x1) -> (4x1) -> ReLU`. Layer 2: `(2x4)@(4x1)+(2x1) -> (2x1)`.
+- Only 1 of 4 hidden values survived ReLU (`0.1722`). Output `[-0.1037, 0.0308]` is meaningless because the weights are random and untrained.
+
+### Practice still open
+- Inverse of `[[3,1],[5,2]]` (det = 1).
+- Transpose of `[[1,2,3],[4,5,6]]` (should be 3x2).
