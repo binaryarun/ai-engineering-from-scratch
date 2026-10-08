@@ -52,7 +52,10 @@ Learning AI engineering for research. Build goal: not sure yet.
 | 2026-10-01 | 0.12 Debugging & Profiling | - | Concepts covered; debug_tools.py exercises not confirmed. Phase 0 complete |
 | 2026-10-02 | 1.01 Linear Algebra Intuition | - | Understood; notes in notes/phase-01-math-foundations.md |
 | 2026-10-05 | 1.02 Vectors, Matrices & Operations | - | Understood via beach example; transpose/inverse practice still open; notes in notes/phase-01-math-foundations.md |
+| 2026-10-08 | 1.03 Matrix Transformations | - | Partly done: columns = where arrows land, chaining and order (tea-shop examples). Eigenvectors, determinant, code still pending; notes in notes/phase-01-math-foundations.md |
 
 ## Review queue
 - 0.04 APIs & Keys (get an API key before Phase 11)
 - 0.07 Docker for AI (install Docker Desktop and run Qdrant before the RAG lessons)
+- 1.03 Matrix Transformations (finish eigenvectors, determinant and transformations.py after the first neural-network exercise)
+- 1.02 practice: inverse of [[2,1],[5,3]] (optional extra)

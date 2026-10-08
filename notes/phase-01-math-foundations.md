@@ -167,3 +167,37 @@ Mistakes I made (watch for these):
 ### Practice still open
 - Inverse of `[[3,1],[5,2]]` (det = 1).
 - Transpose of `[[1,2,3],[4,5,6]]` (should be 3x2).
+
+## Lesson 1.03 Matrix Transformations (partly done: chunks 1 and 2)
+
+### Big idea
+A matrix is a machine that moves every point. Its **columns say where the two basic steps land**: column 1 = where "one step right" `(1, 0)` lands, column 2 = where "one step up" `(0, 1)` lands. Any point is "some right steps + some up steps", so once you know those two landing spots you know where everything goes.
+
+### Real-world picture: the tea shop
+- Recipe grid (columns = drinks, rows = milk and sugar): `[[100, 150], [2, 1]]`. One tea = 100 ml milk + 2 spoons sugar; one coffee = 150 ml milk + 1 spoon sugar.
+- Order 3 teas + 2 coffees = 3 x column 1 + 2 x column 2 = (600 ml, 8 spoons). That is exactly `recipe @ [3, 2]`.
+- Order 4 teas + 1 coffee = (550 ml, 9 spoons). (I wrongly wrote coffee as 200 ml once: it is 150 ml.)
+- Neural network layer is the same: each column = how much one input pushes every neuron; each row = one neuron's weights over all inputs.
+
+### Common transformations (2x2)
+| Name | Matrix | What it does |
+|---|---|---|
+| Stretch / scale | `[[2,0],[0,3]]` | x longer by 2, y longer by 3. `(1,1)` goes to `(2,3)` |
+| Shear (lean) | `[[1,1],[0,1]]` | up arrow leans right; italic text. `(1,1)` goes to `(2,1)` |
+| Mirror | `[[-1,0],[0,1]]` | selfie flip. `(2,1)` goes to `(-2,1)` |
+| Rotate 90 | `[[0,-1],[1,0]]` | right arrow becomes up arrow. `(1,0)` goes to `(0,1)` |
+Phone examples: selfie flip = mirror, widescreen stretch = scale, italic = shear, rotate photo = rotation.
+
+### Chaining machines (composition)
+- Tea shop chain: recipe grid then price list (milk Rs 0.05/ml, sugar Rs 1/spoon). 3 teas + 2 coffees = 600 ml + 8 spoons, then Rs 38.
+- Merge the two machines into one: `price @ recipe = [7, 8.5]` (one tea Rs 7, one coffee Rs 8.5). 3 x 7 + 2 x 8.5 = Rs 38. Same answer.
+- The middle shape numbers must match because machine 1's output count must equal machine 2's input count.
+- `B @ A @ x` reads right to left: A acts first, then B (socks then shoes).
+- Order matters: rotate 90 then scale (2, 0.5) sends `(1,0)` to `(0, 0.5)`; scale then rotate sends it to `(0, 2)`. `A @ B` is usually not `B @ A`.
+- AI link: without a non-linearity like ReLU, a chain of layers collapses into one matrix. ReLU between layers stops that.
+
+### Still to do for 1.03 (come back after the first neural-net exercise)
+- Chunk 3: eigenvectors and eigenvalues (the special direction a matrix only stretches, never turns), PCA/stability link.
+- Determinant as area scale factor (rotation 1, scale = product, shear 1, mirror -1, 0 = squashed flat).
+- Run `phases/01-math-foundations/03-matrix-transformations/code/transformations.py` and the 3 exercises.
+- Open check: 4 teas + 1 coffee money total both ways (answer Rs 36.5).
