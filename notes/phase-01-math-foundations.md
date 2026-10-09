@@ -201,3 +201,48 @@ Phone examples: selfie flip = mirror, widescreen stretch = scale, italic = shear
 - Determinant as area scale factor (rotation 1, scale = product, shear 1, mirror -1, 0 = squashed flat).
 - Run `phases/01-math-foundations/03-matrix-transformations/code/transformations.py` and the 3 exercises.
 - Open check: 4 teas + 1 coffee money total both ways (answer Rs 36.5).
+
+## Lesson 1.04 Calculus for ML (core ideas covered; code not yet run)
+
+### Derivative = "how touchy is it?"
+- Derivative answers: if I nudge the input a tiny bit, how much does the output move? Odometer vs speedometer: speed is the derivative of distance.
+- Square room, side x, area x*x: slope = 2*x. Side 5 gives slope 10, side 10 gives slope 20. Do not confuse area (25, 100) with slope (10, 20). Slope changes with where you stand: 0 at x=0 (bottom of the bowl).
+- Sign of the slope: positive means output rises as input rises (turn the knob down to reduce it); negative means output falls as input rises (turn the knob up).
+- Loss = "how wrong". Each weight is a knob. Derivative of loss for that weight says which way to turn it and how touchy it is. Slope 0 = bottom of the bowl, no improvement possible.
+
+### Partial derivatives and the gradient
+- Partial derivative: nudge one knob, hold all others still. Tea example: slope for sugar and slope for milk.
+- Gradient = the list of all partial derivatives. It points uphill (where loss grows fastest), so go the opposite way.
+
+### Gradient descent (walking downhill blindfolded)
+- Update rule for every knob: `new = old - step_size * slope`. The minus sign flips the slope's advice, so a negative slope makes the knob go UP.
+- Walk on wrongness x*x from x=5, step size 0.1: 5, 4, 3.2, 2.56, 2.048 ... Steps shrink as the ground flattens near the bottom.
+- Step size too small: crawl. Too big: overshoot. Step size 1.0 from x=5 bounces 5, -5, 5, -5 forever.
+- Sanity check: after each step the wrongness should go down (unless step is too big). If it grows, you probably added instead of subtracting.
+
+### Getting the slope
+1. Formula (x*x has slope 2*x).
+2. Nudge and look (numerical derivative): at x=3, x*x goes 9 to 9.0601 for a 0.01 nudge, slope about 6. Works for anything but needs one test per knob, too slow for millions of weights.
+3. Chain rule / backpropagation: gets all the slopes in one backward pass.
+
+### Chain rule (tea-shop version)
+- One extra tea: milk path 100 ml * Rs 0.05 = Rs 5; sugar path 2 spoons * Rs 1 = Rs 2; paths add to Rs 7 (same as the merged grid in 1.03).
+- Along one path multiply the slopes; where paths split and rejoin add them.
+- A network is a chain: input, layer, ReLU, layer, loss. Backpropagation walks backward from the loss multiplying local slopes to get the slope for every weight.
+
+### The full learning loop (taxi fare example)
+Fare = w * km + b (w = price per km, b = starting charge). Data: 1km 3, 2km 5, 3km 7, 4km 9, 5km 11.
+1. Predict with current w, b. 2. Measure how wrong (average squared error = loss). 3. Find slopes of loss for w and b. 4. Nudge: new = old - step * slope. 5. Repeat ~200 times. Ends near w=2, b=1.
+- With w=2, b=1: 4 km predicts 9 = real fare, error 0.
+- If all predictions are too LOW, w and b must go UP (their loss slope is negative, so the minus sign pushes them up).
+
+### Mistakes I made (watch for these)
+- Giving the area when asked for the slope.
+- Writing 0.512 digits into the answer instead of subtracting the step from x (2.56 - 0.512 = 2.048).
+- Adding the step instead of subtracting it (5 + 10 = 15 instead of 5 - 10 = -5).
+- Thinking "loss goes down" means "knob goes down".
+
+### Still to do for 1.04
+- Run `phases/01-math-foundations/04-calculus-for-ml/code/derivatives.py` and paste the output.
+- Not covered yet: Hessian, Taylor series, integrals in ML, Jacobian (lesson sections to skim later; the Jacobian matters for backprop shapes).
+- Exercises (second derivative, minimise (x-3)^2+(y+1)^2, momentum).
