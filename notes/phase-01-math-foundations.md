@@ -243,6 +243,66 @@ Fare = w * km + b (w = price per km, b = starting charge). Data: 1km 3, 2km 5, 3
 - Thinking "loss goes down" means "knob goes down".
 
 ### Still to do for 1.04
-- Run `phases/01-math-foundations/04-calculus-for-ml/code/derivatives.py` and paste the output.
+- DONE: ran derivatives.py (7 experiments: nudge vs formula slope, gradient [8,7] at (1,2), walk on x*x shrinks x by 20% per step, 2-knob walk, Hessian, Taylor, taxi-fare training: loss 67 to 0.014, w=2.08, b=0.73 after 200 rounds, b learns slower).
+- Only three things to remember: (1) slope = direction and touchiness, (2) new = old - step x slope, (3) chain rule = multiply along a path, add across paths. The formula table is look-up, not memorisation.
 - Not covered yet: Hessian, Taylor series, integrals in ML, Jacobian (lesson sections to skim later; the Jacobian matters for backprop shapes).
 - Exercises (second derivative, minimise (x-3)^2+(y+1)^2, momentum).
+
+## Lesson 1.05 Chain Rule and Autodiff (core ideas covered)
+
+### Big idea
+A network is a long chain of small steps. The chain rule gets the slope of the loss for EVERY weight in one backward walk, instead of one nudge-test per weight. Doing this automatically is autodiff (what PyTorch's `.backward()` does).
+
+### Passing the blame backward (samosa graph)
+`x1 = 2` boxes, `x2 = 3` per box, plus 1 bonus, then relu: `y = relu(x1*x2 + 1) = 7`.
+- Forward pass: compute values left to right.
+- Backward pass: start with slope 1 at the end, pass it back with each step's own rule. Result: slope for x1 = 3, for x2 = 2.
+| Step | Backward rule |
+|---|---|
+| Add | pass the slope through unchanged to both sides |
+| Multiply | each input gets the OTHER input's value times the incoming slope |
+| ReLU | pass if the input was positive, block (0) if not |
+- The backward pass needs the forward values, which is why training uses lots of memory.
+- Cost: one forward plus one backward walk, however many weights.
+
+### Dead ReLU
+`x1 = 2, x2 = -3`: a = -6, c = -5, y = relu(-5) = 0 (not -5). Both slopes are 0, so those weights learn nothing on that example (a silent judge).
+
+### The Value object (a number with a receipt)
+Each number stores: its value (`data`), its slope so far (`grad`, starts 0), its parents, and a small `_backward` instruction. Multiply's `_backward`: `self.grad += other.data * out.grad`, `other.grad += self.data * out.grad`.
+- `+=` not `=`: a number used in several places gets blame from each, and the pieces ADD. Overwriting would keep only the last piece. Example `y = x1*x2 + x1` at (2, 3): slope for x1 = 3 (via multiply) + 1 (via add) = 4; slope for x2 = 2; y = 8.
+- `y = x*x` at x=3 gives 3 + 3 = 6 = 2x, the room rule.
+- Topological order: settle the last bills first; a number passes blame back only after everything after it has reported.
+- Reset every grad to 0 before each `loss.backward()`, otherwise last round's blame piles on.
+
+### Flat fee versus per-box fee (my confusion)
+- `x1*x2 + 1`: a plain constant, a flat charge. y = 7, slope for boxes 3.
+- `x1*x2 + x1`: the variable itself, a per-box charge. y = 8, slope for boxes 4.
+- Two different 1s: the VALUE 1 in "+ 1", and the SLOPE 1 of an add (pass through unchanged).
+- Other "minus" spots in the XOR code: `p - y` = prediction minus target; `-1` in `ys` = target "light off"; `1 - t**2` = tanh's slope rule.
+
+### One knob trained by hand (price per box)
+Data: 2 boxes cost 6, so the true w = 3. Start w = 1, step size 0.05. Loss = (w*2 - 6)^2.
+| round | w | prediction | error | loss | slope | new w |
+|---|---|---|---|---|---|---|
+| 1 | 1.0 | 2.0 | -4.0 | 16.00 | -16.0 | 1.8 |
+| 2 | 1.8 | 3.6 | -2.4 | 5.76 | -9.6 | 2.28 |
+| 3 | 2.28 | 4.56 | -1.44 | 2.07 | -5.76 | 2.568 |
+| 4 | 2.568 | 5.136 | -0.864 | 0.75 | -3.456 | 2.7408 |
+Backward walk: slope = 2*error (square step) times 2 (the box count). Each round removes 40% of the remaining gap to 3.
+
+### XOR with a tiny network (hallway light, two switches)
+- Light on when exactly one switch is flipped. One neuron can't do it (if each switch alone is enough, both together is more); a hidden layer can.
+- `MLP([2, 4, 1])`: 2 inputs, 4 hidden tanh neurons, 1 output = 17 knobs (4*(2+1) + 1*(4+1)). tanh squashes to -1..1.
+- Loop: predict, sum of squared errors, zero grads, backward, nudge `p.data -= 0.05 * p.grad`.
+- Real run (seed 42): loss 4.15 to 0.18 after 100 steps; after 500 steps loss 0.0116, predictions about -0.97, 0.94, 0.95, -0.94 (targets -1, 1, 1, -1).
+
+### Mistakes I made (watch for these)
+- Giving y = 7 for `x1*x2 + x1` (used 1 instead of x1 = 2): the answer is 8.
+- Missing the second path: slope of x1 is 4, not 3.
+- Writing y = -5 after ReLU: it is 0.
+- Saying the code overrides the blame: it adds the pieces.
+
+### Still to do for 1.05
+- Run `phases/01-math-foundations/05-chain-rule-and-autodiff/code/autodiff.py`.
+- Exercises: `__pow__` and `tanh` checks, single neuron vs PyTorch, dual numbers (forward mode).
