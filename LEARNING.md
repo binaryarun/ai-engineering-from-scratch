@@ -55,6 +55,7 @@ Learning AI engineering for research. Build goal: not sure yet.
 | 2026-10-08 | 1.03 Matrix Transformations | - | Partly done: columns = where arrows land, chaining and order (tea-shop examples). Eigenvectors, determinant, code still pending; notes in notes/phase-01-math-foundations.md |
 | 2026-10-09 | 1.04 Calculus for ML | - | Core ideas covered with tea/taxi examples (slope, gradient descent, chain rule, learning loop). derivatives.py run and walked through (7 experiments); Hessian/Taylor/integrals/Jacobian and exercises pending, revisit during practical work; notes in notes/phase-01-math-foundations.md |
 | 2026-10-11 | 1.05 Chain Rule & Autodiff | - | Core ideas covered (blame backward, Value object, += and zeroing grads, one-knob walk, XOR training). autodiff.py and exercises pending; notes in notes/phase-01-math-foundations.md |
+| 2026-10-27 | 1.06 Probability and Distributions | - | Core ideas covered (probability as sureness, conditional, uniform/normal, softmax, cross-entropy, sampling). probability.py and exercises pending; notes in notes/phase-01-math-foundations.md |
 
 ## Review queue
 - 0.04 APIs & Keys (get an API key before Phase 11)
@@ -63,3 +64,4 @@ Learning AI engineering for research. Build goal: not sure yet.
 - 1.02 practice: inverse of [[2,1],[5,3]] (optional extra)
 - 1.04 Calculus for ML (revisit during practical work: skim Hessian/Taylor/Jacobian, do exercises)
 - 1.05 Chain Rule & Autodiff (run autodiff.py, do the 4 exercises during practical work)
+- 1.06 Probability and Distributions (run probability.py, skim Poisson/CLT/log probabilities, do exercises)

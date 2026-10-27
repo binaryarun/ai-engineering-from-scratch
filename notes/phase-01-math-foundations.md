@@ -306,3 +306,34 @@ Backward walk: slope = 2*error (square step) times 2 (the box count). Each round
 ### Still to do for 1.05
 - Run `phases/01-math-foundations/05-chain-rule-and-autodiff/code/autodiff.py`.
 - Exercises: `__pow__` and `tanh` checks, single neuron vs PyTorch, dual numbers (forward mode).
+
+## Lesson 1.06 Probability and Distributions (core ideas covered)
+
+### Chunk 1: probability as "how sure"
+- A number from 0 (never) to 1 (always). Shop example: 20 of 50 ordered coffee = 0.4; not coffee = 0.6.
+- All outcomes add up to exactly 1 (a pizza cut into slices). Cat 0.6 + dog 0.3 + rabbit 0.2 = 1.1 is wrong.
+- A classifier's output is a set of slices of one pizza.
+
+### Chunk 2: conditional probability
+- Same question after learning a clue: count only the smaller crowd that matches the clue.
+- 24 samosas out of 40 rainy-day customers = 0.6 (divide by 40, not 100).
+- Spam filter: overall 0.20, but given "free prize" jumps to 0.95.
+
+### Chunk 3: distributions
+- A distribution is the full menu of outcomes with how likely each is.
+- Uniform = all equal (fair dice, 1/6 each). Normal = most near the usual, extremes rare.
+- Average = the usual. Spread = how wild it gets. Same average, different spread (shop A 18-22 vs shop B 5-40).
+
+### Chunk 4: softmax, cross-entropy, sampling
+- Softmax: raw scores in, slices that add to 1 out. Big score gets big slice.
+- Cross-entropy (the loss): punishment grows the smaller a slice the model gave to the true answer (dog 0.90 is a tiny penalty, dog 0.05 is a big one).
+- Sampling: a chatbot rolls a weighted dice over the slices (tea 0.7 / coffee 0.2 / milk 0.1), so answers vary.
+
+### Mistakes made (and fixes)
+- Answered for the wrong slice (gave 0.6 when asked for coffee 0.4). Ask "which slice?"
+- Mixed up "divide by whole crowd" and "divide by the clue crowd" for conditional probability.
+- Thought the weighted dice was 1/3 each; that is uniform, not weighted.
+
+### Still to do for 1.06
+- Run `phases/01-math-foundations/06-probability-and-distributions/code/probability.py`.
+- Skim Poisson, joint/marginal, central limit theorem, log probabilities and do the exercises.
