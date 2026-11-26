@@ -337,3 +337,29 @@ Backward walk: slope = 2*error (square step) times 2 (the box count). Each round
 ### Still to do for 1.06
 - Run `phases/01-math-foundations/06-probability-and-distributions/code/probability.py`.
 - Skim Poisson, joint/marginal, central limit theorem, log probabilities and do the exercises.
+
+## Lesson 1.07 Bayes' Theorem (core ideas covered)
+
+### Chunk 1: the shop alarm (prior, evidence, posterior)
+- A "99% accurate" test can still mean only about 1% chance when the thing is rare (1 in 10,000).
+- Method: imagine a big crowd (e.g. 1,000 customers), split it into groups, count only those who got the clue.
+- Prior = belief before the clue. Evidence = the clue. Posterior = updated belief.
+
+### Worked examples (crowd method)
+- Alarm shop: 1,000 customers, 10 thieves, alarm rings for 9 thieves and 10% of 990 honest (99). Rings = 108, real = 9, chance = 9 out of 108 (about 8%).
+- Mangoes: 200 mangoes, 20 rotten. Flags 16 rotten + 18 good = 34 flagged, chance 16 out of 34 (about 47%).
+- Spam: 1,000 emails, 100 spam. Flags 90 spam + 45 normal = 135 flagged, chance 90 out of 135 (about 67%).
+
+### Chunk 2: updating again and again
+- Today's posterior is tomorrow's prior. Each clue moves the belief up or down.
+- Naive Bayes spam filter: start at the base rate, each word is one more clue ("free prize" up, "meeting tomorrow" down).
+
+### Mistakes made (and fixes)
+- Mixed up "of all thieves, how many ring" (90%) with "of all rings, how many are thieves" (about 8%). Always ask which crowd I divide by.
+- Counted false alarms from the wrong group (the missed thief instead of 10% of the honest).
+- Copied a number from one step to the next wrongly (16 became 18). Fix: fill a small table before moving on.
+- Confused the crowd size (108 rings) with a chance.
+
+### Still to do for 1.07
+- Run the lesson code (Naive Bayes from scratch, MLE vs MAP, Beta-Binomial A/B test).
+- Not yet taught: MLE vs MAP and L2 link, Laplace smoothing, log space, Beta-Binomial.
