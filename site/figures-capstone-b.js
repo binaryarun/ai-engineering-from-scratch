@@ -76,7 +76,7 @@
       s.appendChild(svgEl('line', { x1: c[0], y1: c[1], x2: c[2], y2: c[3], stroke: 'var(--ink-soft,#555)', 'stroke-width': '1.3', 'marker-end': 'url(#cb-arr)' }));
     });
     function packet(path, begin, fill) {
-      var d = svgEl('circle', { r: '5', fill: fill, cx: '0', cy: '0' });
+      var d = svgEl('circle', { r: '5', fill: fill, cx: '0', cy: '0', opacity: '0' });
       d.appendChild(svgEl('animateMotion', { path: path, dur: '2.8s', begin: begin, repeatCount: 'indefinite', keyPoints: '0;1', keyTimes: '0;1' }));
       d.appendChild(anim('opacity', '0;1;1;0', '2.8s', { begin: begin, keyTimes: '0;0.1;0.9;1' }));
       return d;
@@ -132,9 +132,11 @@
     var stages = ['rewrite', 'retrieve', 'rerank', 'generate'], i;
     var bw = 96, y = 70, x = [16, 142, 268, 394];
     for (i = 0; i < 4; i++) {
-      var b = rect(x[i], y, bw, 44, 'var(--bg-surface,#eee)', 'var(--rule-soft,#ddd)');
-      b.appendChild(anim('fill', 'var(--bg-surface,#eee);var(--blueprint,#3553ff);var(--bg-surface,#eee)', '3.6s', { begin: (i * 0.7) + 's', keyTimes: '0;0.5;1' }));
-      s.appendChild(b);
+      s.appendChild(rect(x[i], y, bw, 44, 'var(--bg-surface,#eee)', 'var(--rule-soft,#ddd)'));
+      var lit = rect(x[i], y, bw, 44, 'var(--blueprint,#3553ff)', 'var(--rule-soft,#ddd)');
+      lit.setAttribute('opacity', '0');
+      lit.appendChild(anim('opacity', '0;1;0', '3.6s', { begin: (i * 0.7) + 's', keyTimes: '0;0.5;1' }));
+      s.appendChild(lit);
       s.appendChild(txt(x[i] + bw / 2, y + 27, stages[i], '11'));
       if (i < 3) s.appendChild(svgEl('line', { x1: x[i] + bw, y1: y + 22, x2: x[i + 1], y2: y + 22, stroke: 'var(--ink-soft,#555)', 'stroke-width': '1.3', 'marker-end': 'url(#cb-rag)' }));
     }
@@ -143,10 +145,10 @@
     var pk = svgEl('circle', { r: '6', fill: 'var(--warn,#b8870f)', cx: '64', cy: '92' });
     pk.appendChild(svgEl('animateMotion', { path: path, dur: '3.6s', repeatCount: 'indefinite', keyTimes: '0;1', keyPoints: '0;1', calcMode: 'linear' }));
     s.appendChild(pk);
-    var cite = txt(x[3] + bw / 2, 150, 'answer + [chunk:42] citation', '10', 'var(--blueprint,#3553ff)');
+    var cite = txt(x[3] + bw, 150, 'answer + [chunk:42] citation', '10', 'var(--blueprint,#3553ff)', 'end');
     cite.appendChild(anim('opacity', '0;0;1;1;0', '3.6s', { keyTimes: '0;0.78;0.85;0.95;1' }));
     s.appendChild(cite);
-    var refuse = txt(x[3] + bw / 2, 168, 'or refuse on low confidence', '8', 'var(--ink-mute,#777)');
+    var refuse = txt(x[3] + bw, 168, 'or refuse on low confidence', '8', 'var(--ink-mute,#777)', 'end');
     refuse.appendChild(anim('opacity', '0;0;0.8;0', '3.6s', { keyTimes: '0;0.85;0.92;1' }));
     s.appendChild(refuse);
     shell(host, 'END-TO-END RAG', 'one query, four stages', s,
@@ -168,12 +170,16 @@
     var res = ['pass', 'pass', 'fail', 'pass'], i;
     for (i = 0; i < 4; i++) {
       var ay = 60 + i * 32, ok = res[i] === 'pass';
-      var box = rect(200, ay, 120, 24, 'var(--bg-surface,#eee)', 'var(--rule-soft,#ddd)');
-      box.appendChild(anim('fill', 'var(--bg-surface,#eee);var(--bg-surface,#eee);' + (ok ? 'var(--blueprint,#3553ff)' : 'var(--warn,#b8870f)'), '3.4s', { begin: (0.3 + i * 0.25) + 's', keyTimes: '0;0.3;1' }));
-      s.appendChild(box);
-      var tk = txt(208, ay + 16, 'assert ' + (i + 1), '9', 'var(--ink-soft,#555)', 'start');
-      tk.appendChild(anim('fill', 'var(--ink-soft,#555);var(--bg,#fafaf5)', '3.4s', { begin: (0.3 + i * 0.25) + 's', keyTimes: '0;1' }));
-      s.appendChild(tk);
+      s.appendChild(rect(200, ay, 120, 24, 'var(--bg-surface,#eee)', 'var(--rule-soft,#ddd)'));
+      var base = txt(208, ay + 16, 'assert ' + (i + 1), '9', 'var(--ink-soft,#555)', 'start');
+      base.appendChild(anim('opacity', '1;1;0;0', '3.4s', { begin: (0.3 + i * 0.25) + 's', keyTimes: '0;0.3;0.31;1' }));
+      s.appendChild(base);
+      var lit = svgEl('g', { opacity: '0' }, [
+        rect(200, ay, 120, 24, ok ? 'var(--blueprint,#3553ff)' : 'var(--warn,#b8870f)', 'var(--rule-soft,#ddd)'),
+        txt(208, ay + 16, 'assert ' + (i + 1), '9', 'var(--bg,#fafaf5)', 'start')
+      ]);
+      lit.appendChild(anim('opacity', '0;0;1;1', '3.4s', { begin: (0.3 + i * 0.25) + 's', keyTimes: '0;0.31;0.36;1' }));
+      s.appendChild(lit);
       var mark = txt(312, ay + 16, ok ? '✓' : '✗', '12', ok ? 'var(--blueprint,#3553ff)' : 'var(--warn,#b8870f)', 'end');
       mark.appendChild(anim('opacity', '0;0;1;1', '3.4s', { begin: (0.3 + i * 0.25) + 's', keyTimes: '0;0.3;0.45;1' }));
       mark.setAttribute('fill', 'var(--bg,#fafaf5)');
@@ -196,8 +202,7 @@
   // ── eval-grid (75): task grid lights pass/fail across a worker pool ─────────
   function evalGrid(host) {
     var s = svg(240), cols = 8, rows = 4, cw = 38, ch = 30, gx0 = 130, gy0 = 30;
-    s.appendChild(txt(60, 50, 'worker', '10', 'var(--ink-soft,#555)'));
-    s.appendChild(txt(60, 64, 'pool', '10', 'var(--ink-soft,#555)'));
+    s.appendChild(txt(60, gy0 - 8, 'worker pool', '10', 'var(--ink-soft,#555)'));
     var w, c;
     for (w = 0; w < rows; w++) {
       s.appendChild(rect(20, gy0 + w * (ch + 6) + 18, 80, 22, 'var(--blueprint,#3553ff)', 'none'));
@@ -205,14 +210,19 @@
       s.appendChild(wl);
     }
     var seed = [1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1];
+    var under = svgEl('path', { fill: 'var(--bg-surface,#eee)' }), cells = '', bw = cw - 6, bh = ch - 4;
+    s.appendChild(under);
     for (w = 0; w < rows; w++) {
       for (c = 0; c < cols; c++) {
         var idx = w * cols + c, ok = seed[idx], x = gx0 + c * cw, y = gy0 + w * (ch + 6) + 14, beg = (c * 0.18 + w * 0.06);
-        var cell = rect(x, y, cw - 6, ch - 4, 'var(--bg-surface,#eee)', 'var(--rule-soft,#ddd)');
-        cell.appendChild(anim('fill', 'var(--bg-surface,#eee);var(--bg-surface,#eee);' + (ok ? 'var(--blueprint,#3553ff)' : 'var(--warn,#b8870f)') + ';' + (ok ? 'var(--blueprint,#3553ff)' : 'var(--warn,#b8870f)'), '4s', { begin: beg + 's', keyTimes: '0;0.2;0.35;1' }));
+        cells += 'M' + (x + 4) + ' ' + y + 'h' + (bw - 8) + 'a4 4 0 0 1 4 4v' + (bh - 8) + 'a4 4 0 0 1 -4 4h' + (8 - bw) + 'a4 4 0 0 1 -4 -4v' + (8 - bh) + 'a4 4 0 0 1 4 -4z';
+        var cell = rect(x, y, bw, bh, ok ? 'var(--blueprint,#3553ff)' : 'var(--warn,#b8870f)', 'var(--rule-soft,#ddd)');
+        cell.setAttribute('fill-opacity', '0');
+        cell.appendChild(anim('fill-opacity', '0;0;1;1', '4s', { begin: beg + 's', keyTimes: '0;0.2;0.35;1' }));
         s.appendChild(cell);
       }
     }
+    under.setAttribute('d', cells);
     s.appendChild(txt(gx0, gy0 - 8, 'tasks.jsonl →', '9', 'var(--ink-mute,#777)', 'start'));
     var bar = svgEl('line', { x1: gx0, y1: gy0 + 10, x2: gx0, y2: gy0 + rows * (ch + 6) + 4, stroke: 'var(--warn,#b8870f)', 'stroke-width': '1.6', opacity: '0.7' });
     bar.appendChild(anim('x1', gx0 + ';' + (gx0 + cols * cw), '4s', { keyTimes: '0;1' }));
@@ -232,27 +242,28 @@
     var layers = ['normalize', 'substring', 'regex'], x = [70, 200, 330], i;
     for (i = 0; i < 3; i++) {
       s.appendChild(rect(x[i], 80, 96, 50, 'var(--bg-surface,#eee)', 'var(--rule-soft,#ddd)'));
-      s.appendChild(txt(x[i] + 48, 100, layers[i], '11'));
-      s.appendChild(txt(x[i] + 48, 116, 'layer', '8', 'var(--ink-mute,#777)'));
-      if (i < 2) s.appendChild(svgEl('line', { x1: x[i] + 96, y1: 105, x2: x[i + 1], y2: 105, stroke: 'var(--ink-soft,#555)', 'stroke-width': '1.3', 'marker-end': 'url(#cb-inj)' }));
+      s.appendChild(txt(x[i] + 48, 98, layers[i], '11'));
+      s.appendChild(txt(x[i] + 48, 110, 'layer', '8', 'var(--ink-mute,#777)'));
+      if (i < 2) s.appendChild(svgEl('line', { x1: x[i] + 96, y1: 120, x2: x[i + 1], y2: 120, stroke: 'var(--ink-soft,#555)', 'stroke-width': '1.3', 'marker-end': 'url(#cb-inj)' }));
     }
     s.appendChild(rect(440, 80, 60, 50, 'var(--bg-surface,#eee)', 'var(--blueprint,#3553ff)'));
-    s.appendChild(txt(470, 100, 'verdict', '9'));
-    s.appendChild(svgEl('line', { x1: 426, y1: 105, x2: 440, y2: 105, stroke: 'var(--ink-soft,#555)', 'stroke-width': '1.3', 'marker-end': 'url(#cb-inj)' }));
+    s.appendChild(txt(470, 98, 'verdict', '9'));
+    s.appendChild(svgEl('line', { x1: 426, y1: 120, x2: 440, y2: 120, stroke: 'var(--ink-soft,#555)', 'stroke-width': '1.3', 'marker-end': 'url(#cb-inj)' }));
     // a malicious prompt fired at the regex layer, a benign one passes clean
     function flow(begin, fired, fill) {
-      var pk = svgEl('circle', { r: '5', fill: fill, cx: '20', cy: '105' });
+      var pk = svgEl('circle', { r: '5', fill: fill, cx: '20', cy: '120' });
       pk.appendChild(svgEl('animateMotion', { path: 'M0 0 L450 0', dur: '3s', begin: begin, repeatCount: 'indefinite', keyTimes: '0;1', keyPoints: '0;1', calcMode: 'linear' }));
       pk.appendChild(anim('opacity', '0;1;1;0', '3s', { begin: begin, keyTimes: '0;0.05;0.92;1' }));
       return pk;
     }
     s.appendChild(flow('0s', false, 'var(--blueprint,#3553ff)'));
     s.appendChild(flow('1.5s', true, 'var(--warn,#b8870f)'));
-    var fire = svgEl('circle', { cx: 378, cy: 105, r: '6', fill: 'none', stroke: 'var(--warn,#b8870f)', 'stroke-width': '2' });
+    var fire = svgEl('circle', { cx: 378, cy: 120, r: '6', fill: 'none', stroke: 'var(--warn,#b8870f)', 'stroke-width': '2', opacity: '0' });
     fire.appendChild(anim('r', '6;20;6', '3s', { begin: '2.55s' }));
     fire.appendChild(anim('opacity', '0;0.9;0', '3s', { begin: '2.55s' }));
     s.appendChild(fire);
     var lab = txt(378, 60, 'rule fires → attack', '9', 'var(--warn,#b8870f)');
+    lab.setAttribute('opacity', '0');
     lab.appendChild(anim('opacity', '0;1;0', '3s', { begin: '2.55s' }));
     s.appendChild(lab);
     s.appendChild(txt(470, 145, 'p, category', '8', 'var(--ink-mute,#777)'));

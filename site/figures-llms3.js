@@ -46,12 +46,12 @@
     for (var e = 0; e < E; e++) {
       var ey = eyTop + e * (eh + eg);
       svg.appendChild(svgEl('rect', { x: ex0, y: ey, width: ew, height: eh, rx: 4, fill: SOFT, stroke: MUTE, 'stroke-width': 1 }));
-      svg.appendChild(svgEl('text', { x: ex0 + 10, y: ey + 22, 'font-family': 'var(--font-mono,monospace)', 'font-size': 11, fill: INK }, [document.createTextNode('expert ' + (e + 1))]));
       // pulse the expert when it is selected (each token picks 2 of 4, cycling)
       var lit = svgEl('rect', { x: ex0, y: ey, width: ew, height: eh, rx: 4, fill: BP, opacity: 0 });
       var phase = (e * 0.22).toFixed(2);
       lit.appendChild(anim('opacity', '0;0.7;0;0', '4.4s', { keyTimes: '0;' + phase + ';' + (Number(phase) + 0.2).toFixed(2) + ';1' }));
       svg.appendChild(lit);
+      svg.appendChild(svgEl('text', { x: ex0 + 10, y: ey + 22, 'font-family': 'var(--font-mono,monospace)', 'font-size': 11, fill: INK }, [document.createTextNode('expert ' + (e + 1))]));
     }
     // tokens on the left, each shooting a routing beam to its 2 experts
     var pick = [[0, 2], [1, 3], [0, 3], [1, 2]];
@@ -62,7 +62,7 @@
       // a routing token travels token → router → expert
       pick[i].forEach(function (e, j) {
         var ey = eyTop + e * (eh + eg) + eh / 2;
-        var d = 'M ' + (x + tw / 2) + ' ' + (ty + 28) + ' Q ' + routerX + ' 118 ' + ex0 + ' ' + ey;
+        var d = 'M ' + (x + tw / 2) + ' ' + (ty + 28) + ' Q ' + (x + tw / 2) + ' 82 ' + (routerX + 35) + ' 90 M ' + (routerX + 70) + ' 118 Q ' + (routerX + 105) + ' 118 ' + ex0 + ' ' + ey;
         var beam = svgEl('path', { d: d, fill: 'none', stroke: BP, 'stroke-width': 1.4, 'stroke-dasharray': '5 5', opacity: 0.18 });
         beam.appendChild(anim('opacity', '0.12;0.8;0.12', '4.4s', { begin: (i * 0.22 + j * 0.05) + 's' }));
         beam.appendChild(anim('stroke-dashoffset', '20;0', '0.9s'));
@@ -83,7 +83,7 @@
     for (var i = 0; i < n; i++) {
       var ey = by + i * (bh + bg);
       var er = svgEl('rect', { x: encX, y: ey, width: 90, height: bh, rx: 4, fill: SOFT, stroke: MUTE, 'stroke-width': 1 });
-      er.appendChild(anim('fill', 'var(--bg,#fafaf5);' + SOFT + ';' + SOFT, '4s', { keyTimes: '0;0.2;1', fill: 'freeze', repeatCount: '1' }));
+      er.appendChild(anim('fill-opacity', '0;1;1', '4s', { keyTimes: '0;0.2;1', fill: 'freeze', repeatCount: '1' }));
       svg.appendChild(er);
     }
     svg.appendChild(svgEl('text', { x: encX + 45, y: 28, 'text-anchor': 'middle', 'font-family': 'var(--font-mono,monospace)',
@@ -251,8 +251,9 @@
     stages.forEach(function (s, i) {
       var rad = s.a * Math.PI / 180;
       var nx = cx + r * Math.cos(rad), ny = cy + r * Math.sin(rad);
-      var node = svgEl('circle', { cx: nx, cy: ny, r: 11, fill: 'var(--bg,#fafaf5)', stroke: BP, 'stroke-width': 1.6 });
-      node.appendChild(anim('fill', 'var(--bg,#fafaf5);' + BP + ';var(--bg,#fafaf5);var(--bg,#fafaf5)', '6s', { keyTimes: '0;' + (0.04 + i * 0.333).toFixed(3) + ';' + (0.2 + i * 0.333).toFixed(3) + ';1' }));
+      svg.appendChild(svgEl('circle', { cx: nx, cy: ny, r: 11, fill: 'var(--bg,#fafaf5)', stroke: BP, 'stroke-width': 1.6 }));
+      var node = svgEl('circle', { cx: nx, cy: ny, r: 11, fill: BP, stroke: BP, 'stroke-width': 1.6, opacity: 0 });
+      node.appendChild(anim('opacity', '0;1;0;0', '6s', { keyTimes: '0;' + (0.04 + i * 0.333).toFixed(3) + ';' + (0.2 + i * 0.333).toFixed(3) + ';1' }));
       svg.appendChild(node);
       var lx = nx + (s.a === 30 ? 18 : s.a === 150 ? -18 : 0);
       svg.appendChild(svgEl('text', { x: lx, y: ny + (s.a === -90 ? -18 : 30), 'text-anchor': 'middle',

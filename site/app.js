@@ -19,7 +19,6 @@
     initStaggerIndex();
     initModal();
     initCopyButton();
-    initMastheadFigure();
     initFadeObserver();
   });
 
@@ -28,11 +27,15 @@
     var lessonTotal = PHASES.reduce(function (total, phase) {
       return total + (Array.isArray(phase.lessons) ? phase.lessons.length : 0);
     }, 0);
+    var lessonLabel = countLabel(lessonTotal, 'lesson', 'lessons');
+    var phaseLabel = countLabel(PHASES.length, 'phase', 'phases');
     var values = {
-      mastheadLessonCount: lessonTotal + ' lessons',
-      mastheadPhaseCount: PHASES.length + ' phases',
-      prefaceLessonCount: lessonTotal + ' lessons',
-      prefacePhaseCount: PHASES.length + ' phases'
+      mastheadLessonCount: lessonLabel,
+      mastheadPhaseCount: phaseLabel,
+      prefaceLessonCount: lessonLabel,
+      prefacePhaseCount: phaseLabel,
+      tocLessonCount: lessonLabel,
+      tocPhaseCount: phaseLabel
     };
     Object.keys(values).forEach(function (id) {
       var target = document.getElementById(id);
@@ -112,9 +115,9 @@
     var phasePct = stats.phases > 0 ? (stats.completePhases / stats.phases) * 100 : 0;
     var glossaryCount = (typeof GLOSSARY !== 'undefined') ? GLOSSARY.length : 0;
 
-    setText('[data-stat="complete-frac"]', stats.complete + ' / ' + stats.lessons);
-    setText('[data-stat="phases-frac"]', stats.completePhases + ' / ' + stats.phases);
-    setText('[data-stat="glossary-count"]', String(glossaryCount));
+    setText('[data-stat="complete-frac"]', formatCount(stats.complete) + ' / ' + formatCount(stats.lessons));
+    setText('[data-stat="phases-frac"]', formatCount(stats.completePhases) + ' / ' + formatCount(stats.phases));
+    setText('[data-stat="glossary-count"]', formatCount(glossaryCount));
     setBar('[data-bar="complete"]', pct);
     setBar('[data-bar="phases"]', phasePct);
     setBar('[data-bar="languages"]', 100);
@@ -129,29 +132,45 @@
   function renderPhases() {
     var grid = document.getElementById('phasesGrid');
     if (!grid) return;
+    if (!PHASES.length) {
+      grid.innerHTML = '<p class="toc-empty">No phases are published yet.</p>';
+      return;
+    }
     var hasProgress = !!window.AIFSProgress;
     var html = '';
+    var nextMarked = false;
+    grid.classList.add('phase-cards');
     for (var i = 0; i < PHASES.length; i++) {
       var p = PHASES[i];
       var total = p.lessons.length;
       var done = 0;
       for (var j = 0; j < p.lessons.length; j++) {
-        var staticDone = p.lessons[j].status === 'complete';
-        var userDone = false;
         if (hasProgress && p.lessons[j].url) {
           var lp = window.AIFSProgress.extractPath(p.lessons[j].url);
-          if (lp) userDone = window.AIFSProgress.isLessonComplete(lp);
+          if (lp && window.AIFSProgress.isLessonComplete(lp)) done++;
         }
-        if (staticDone || userDone) done++;
       }
-      var statusClass = p.status.replace(/ /g, '-');
-      var roman = toRoman(p.id);
+      var count = done > 0 ? done + ' / ' + total : total + (total === 1 ? ' lesson' : ' lessons');
+      var statusClass = escapeHtml(String(p.status || 'planned').replace(/ /g, '-'));
       var num = String(p.id).padStart(2, '0');
-      html += '<div class="toc-row" data-phase="' + i + '" role="button" tabindex="0" aria-haspopup="dialog" aria-label="Open Phase ' + num + ': ' + escapeHtml(p.name) + '">';
-      html += '<span class="toc-num">' + roman + '.</span>';
-      html += '<div><span class="toc-status ' + statusClass + '"></span><span class="toc-name">' + escapeHtml(p.name) + '</span></div>';
-      html += '<span class="toc-meta">' + done + ' / ' + total + '</span>';
-      html += '<span class="toc-meta">' + num + '</span>';
+      var finished = total > 0 && done >= total;
+      var isNext = !finished && !nextMarked && total > 0;
+      if (isNext) nextMarked = true;
+      var action = '';
+      if (finished) action = 'Done';
+      else if (done > 0) action = 'Continue';
+      else if (isNext) action = 'Start here';
+      var percent = total > 0 ? Math.round(done / total * 100) : 0;
+      var cardClass = 'phase-card';
+      if (isNext) cardClass += ' is-next';
+      if (done > 0 && !finished) cardClass += ' is-started';
+      if (finished) cardClass += ' is-done';
+      html += '<div class="' + cardClass + '" data-phase="' + i + '" role="button" tabindex="0" aria-haspopup="dialog" aria-label="Open Phase ' + num + ': ' + escapeHtml(p.name) + '">';
+      html += '<div class="phase-card-top"><span class="phase-card-num" dir="ltr">Phase ' + num + '</span><span class="toc-status ' + statusClass + '"></span></div>';
+      html += '<h3 class="phase-card-name">' + escapeHtml(p.name) + '</h3>';
+      html += '<p class="phase-card-desc">' + escapeHtml(p.desc || '') + '</p>';
+      if (done > 0) html += '<div class="phase-card-bar" aria-hidden="true"><span style="width:' + percent + '%"></span></div>';
+      html += '<div class="phase-card-foot"><span class="phase-card-count">' + count + '</span>' + (action ? '<span class="phase-card-action">' + action + '</span>' : '') + '</div>';
       html += '</div>';
     }
     grid.innerHTML = html;
@@ -228,6 +247,14 @@
     });
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape') {
+        var activeSearch = document.getElementById('modalSearch');
+        if (activeSearch && document.activeElement === activeSearch && activeSearch.value) {
+          activeSearch.value = '';
+          if (currentPhaseIdx >= 0 && PHASES[currentPhaseIdx]) {
+            renderModalLessons(PHASES[currentPhaseIdx]);
+          }
+          return;
+        }
         closeModal(true);
         return;
       }
@@ -254,20 +281,46 @@
         window.AIFSProgress.reset();
       });
     }
+
+    var searchInput = document.getElementById('modalSearch');
+    if (searchInput) {
+      searchInput.addEventListener('input', function () {
+        if (currentPhaseIdx >= 0 && PHASES[currentPhaseIdx]) {
+          renderModalLessons(PHASES[currentPhaseIdx]);
+        }
+      });
+    }
   }
 
   var currentPhaseIdx = -1;
   var modalReturnFocus = null;
+  var modalReturnPhase = null;
+
+  function phaseRow(idx) {
+    return document.querySelector('.toc-row[data-phase="' + idx + '"], .phase-card[data-phase="' + idx + '"]');
+  }
 
   function openModal(idx, fromKeyboard) {
     var p = PHASES[idx];
     if (!p) return;
     currentPhaseIdx = idx;
     modalReturnFocus = document.activeElement;
+    var origin = modalReturnFocus && modalReturnFocus.closest ? modalReturnFocus.closest('.toc-row, .phase-card') : null;
+    modalReturnPhase = origin ? origin.getAttribute('data-phase') : null;
 
     document.getElementById('modalPhaseNum').textContent = 'PHASE ' + String(p.id).padStart(2, '0');
     document.getElementById('modalTitle').textContent = p.name;
     document.getElementById('modalDesc').textContent = p.desc;
+    var searchInput = document.getElementById('modalSearch');
+    if (searchInput) searchInput.value = '';
+    var hubLink = document.getElementById('modalPhaseLink');
+    if (hubLink) {
+      hubLink.hidden = !p.hub;
+      if (p.hub) {
+        hubLink.setAttribute('href', p.hub);
+        hubLink.textContent = 'Open the ' + p.name + ' overview';
+      }
+    }
 
     renderModalLessons(p);
 
@@ -286,10 +339,14 @@
   function renderModalLessons(p) {
     var container = document.getElementById('modalLessons');
     if (!container) return;
+    var searchWrap = document.getElementById('modalSearchWrap');
+    if (searchWrap) searchWrap.hidden = !p.lessons || p.lessons.length === 0;
 
     var hasProgress = !!window.AIFSProgress;
     var userDone = 0;
     var html = '';
+    var searchInput = document.getElementById('modalSearch');
+    var query = searchInput ? (searchInput.value || '').toLowerCase().trim() : '';
 
     for (var i = 0; i < p.lessons.length; i++) {
       var l = p.lessons[i];
@@ -297,20 +354,23 @@
       var lessonPath = pathMatch ? pathMatch[1] : '';
       var userComplete = hasProgress && lessonPath && window.AIFSProgress.isLessonComplete(lessonPath);
       if (userComplete) userDone++;
+      if (query && (l.name || '').toLowerCase().indexOf(query) === -1) continue;
 
       var canOpen = (l.status === 'complete' || userComplete) && lessonPath;
       var lessonUrl = canOpen ? 'lesson?path=' + encodeURIComponent(lessonPath) : '';
       var lessonLabel = escapeHtml(l.name);
       var lessonMeta = '<span class="modal-lesson-meta"><span class="modal-lesson-type" data-type="' + escapeHtml(l.type) + '"' + (l.combines ? ' title="Combines: ' + escapeHtml(l.combines) + '"' : '') + '>' + escapeHtml(l.type) + '</span><span aria-hidden="true">·</span><span class="modal-lesson-lang">' + escapeHtml(l.lang) + '</span></span>';
 
+      var lessonCopy = '<span class="modal-lesson-copy"><span class="modal-lesson-name" dir="auto" title="' + lessonLabel + '">' + lessonLabel + '</span>' + lessonMeta + '</span>';
+
       html += '<div class="modal-lesson' + (userComplete ? ' user-done' : '') + '">';
       if (canOpen) {
         html += '<a href="' + lessonUrl + '" class="modal-lesson-open" aria-label="Open lesson: ' + lessonLabel + '">';
-        html += '<span class="modal-lesson-copy"><span class="modal-lesson-name">' + lessonLabel + '</span>' + lessonMeta + '</span>';
+        html += lessonCopy;
         html += '<span class="modal-lesson-cta">' + (userComplete ? 'Review' : 'Open lesson') + '<span aria-hidden="true">→</span></span></a>';
       } else {
         html += '<span class="modal-lesson-open is-unavailable" aria-disabled="true">';
-        html += '<span class="modal-lesson-copy"><span class="modal-lesson-name">' + lessonLabel + '</span>' + lessonMeta + '</span>';
+        html += lessonCopy;
         html += '<span class="modal-lesson-cta">Coming soon</span></span>';
       }
 
@@ -322,6 +382,11 @@
       html += '</div>';
     }
 
+    if (!html) {
+      html = query
+        ? '<p class="modal-lessons-empty" role="status">No lessons match “' + escapeHtml(query) + '”.</p>'
+        : '<p class="modal-lessons-empty">No lessons are published in this phase yet.</p>';
+    }
     container.innerHTML = html;
 
     var toggles = container.querySelectorAll('.modal-lesson-toggle');
@@ -346,7 +411,7 @@
       var pct = Math.round((userDone / p.lessons.length) * 100);
       if (progEl) {
         progEl.style.display = '';
-        progEl.innerHTML = '<span><strong class="modal-progress-count">' + userDone + '</strong> of ' + p.lessons.length + ' lessons complete</span><span class="modal-progress-pct">' + pct + '%</span>';
+        progEl.innerHTML = '<span><strong class="modal-progress-count">' + formatCount(userDone) + '</strong> of ' + countLabel(p.lessons.length, 'lesson', 'lessons') + ' complete</span><span class="modal-progress-pct">' + pct + '%</span>';
       }
       if (barEl && barFill) {
         barEl.style.display = '';
@@ -366,7 +431,11 @@
   if (window.AIFSProgress) {
     window.AIFSProgress.onChange(function () {
       if (currentPhaseIdx >= 0 && PHASES[currentPhaseIdx]) {
+        var focused = document.activeElement;
+        var focusedPath = focused && focused.classList && focused.classList.contains('modal-lesson-toggle') ? focused.getAttribute('data-path') : '';
         renderModalLessons(PHASES[currentPhaseIdx]);
+        var again = focusedPath ? document.querySelector('#modalLessons .modal-lesson-toggle[data-path="' + focusedPath + '"]') : null;
+        if (again) again.focus();
       }
       populateStats();
       renderPhases();
@@ -380,10 +449,12 @@
     overlay.classList.remove('open');
     overlay.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
-    if (modalReturnFocus && modalReturnFocus.isConnected && typeof modalReturnFocus.focus === 'function') {
-      modalReturnFocus.focus();
-    }
+    var returnTo = modalReturnFocus && modalReturnFocus.isConnected ? modalReturnFocus : null;
+    if (!returnTo && modalReturnPhase !== null) returnTo = phaseRow(modalReturnPhase);
+    if (returnTo && typeof returnTo.focus === 'function') returnTo.focus();
     modalReturnFocus = null;
+    modalReturnPhase = null;
+    currentPhaseIdx = -1;
     requestAnimationFrame(function () {
       overlay.classList.remove('no-motion');
     });
@@ -470,191 +541,6 @@
     }
   }
 
-  function initMastheadFigure() {
-    var figure = document.querySelector('[data-masthead-figure]');
-    if (!figure) return;
-    var panels = Array.prototype.slice.call(figure.querySelectorAll('.fig-panel'));
-    var dots = Array.prototype.slice.call(figure.querySelectorAll('.fig-dot'));
-    var previous = figure.querySelector('.fig-previous');
-    var next = figure.querySelector('.fig-next');
-    var controls = figure.querySelector('.fig-controls');
-    var caption = figure.querySelector('.fig-caption');
-    if (panels.length < 2 || dots.length !== panels.length || !previous || !next || !controls || !caption) return;
-
-    var autoplayDelay = 6500;
-    var current = Math.max(0, panels.findIndex(function (panel) { return panel.classList.contains('is-active'); }));
-    var reducedQuery = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
-    var desktopQuery = window.matchMedia ? window.matchMedia('(min-width: 1280px) and (hover: hover) and (pointer: fine)') : null;
-    var inViewport = !window.IntersectionObserver;
-    var timer = 0;
-    var timerStartedAt = 0;
-    var timerRemaining = autoplayDelay;
-    var autoplayCancelled = !!(reducedQuery && reducedQuery.matches);
-    var autoplayComplete = false;
-    var disposed = false;
-    var cleanups = [];
-
-    function now() {
-      return window.performance && typeof window.performance.now === 'function' ? window.performance.now() : Date.now();
-    }
-
-    function listen(target, type, handler, options) {
-      target.addEventListener(type, handler, options);
-      cleanups.push(function () { target.removeEventListener(type, handler, options); });
-    }
-
-    function listenToQuery(query, handler) {
-      if (!query) return;
-      if (typeof query.addEventListener === 'function') {
-        query.addEventListener('change', handler);
-        cleanups.push(function () { query.removeEventListener('change', handler); });
-      } else if (typeof query.addListener === 'function') {
-        query.addListener(handler);
-        cleanups.push(function () { query.removeListener(handler); });
-      }
-    }
-
-    function isDesktopView() {
-      return desktopQuery ? desktopQuery.matches : figure.getClientRects().length > 0;
-    }
-
-    function isReduced() {
-      return !!(reducedQuery && reducedQuery.matches);
-    }
-
-    function isOnScreen() {
-      var rect = figure.getBoundingClientRect();
-      return rect.width > 0 && rect.height > 0 && rect.bottom > 0 && rect.top < window.innerHeight && rect.right > 0 && rect.left < window.innerWidth;
-    }
-
-    function showPlate(index, announce) {
-      current = Math.max(0, Math.min(panels.length - 1, index));
-      panels.forEach(function (panel, panelIndex) {
-        var active = panelIndex === current;
-        panel.classList.toggle('is-active', active);
-        panel.setAttribute('aria-hidden', active ? 'false' : 'true');
-      });
-      dots.forEach(function (dot, dotIndex) {
-        var active = dotIndex === current;
-        dot.classList.toggle('is-active', active);
-        dot.setAttribute('aria-pressed', active ? 'true' : 'false');
-      });
-      caption.setAttribute('aria-live', announce ? 'polite' : 'off');
-      caption.textContent = 'Plate ' + (current + 1) + ' of ' + panels.length + '. ' + panels[current].getAttribute('data-caption');
-      previous.disabled = current === 0;
-      next.disabled = current === panels.length - 1;
-    }
-
-    function clearTimer(preserveRemaining) {
-      if (!timer) return;
-      if (preserveRemaining) {
-        timerRemaining = Math.max(0, timerRemaining - (now() - timerStartedAt));
-      }
-      window.clearTimeout(timer);
-      timer = 0;
-      timerStartedAt = 0;
-    }
-
-    function canAutoplay() {
-      return !autoplayCancelled && !autoplayComplete && !isReduced() && isDesktopView() && inViewport && !document.hidden && figure.getClientRects().length > 0;
-    }
-
-    function scheduleAutoplay() {
-      if (timer || !canAutoplay()) return;
-      if (current >= panels.length - 1) {
-        autoplayComplete = true;
-        figure.removeAttribute('data-autoplay');
-        return;
-      }
-      figure.setAttribute('data-autoplay', 'true');
-      timerStartedAt = now();
-      timer = window.setTimeout(function () {
-        timer = 0;
-        timerStartedAt = 0;
-        showPlate(current + 1, false);
-        timerRemaining = autoplayDelay;
-        if (current >= panels.length - 1) {
-          autoplayComplete = true;
-          figure.removeAttribute('data-autoplay');
-          return;
-        }
-        scheduleAutoplay();
-      }, Math.max(16, timerRemaining));
-    }
-
-    function cancelAutoplay() {
-      clearTimer(false);
-      autoplayCancelled = true;
-      figure.removeAttribute('data-autoplay');
-    }
-
-    function syncRuntime() {
-      if (disposed) return;
-      var paused = isReduced() || !isDesktopView() || !inViewport || document.hidden || figure.getClientRects().length === 0;
-      figure.setAttribute('data-motion-paused', paused ? 'true' : 'false');
-      if (paused) clearTimer(true);
-      else scheduleAutoplay();
-    }
-
-    function choosePlate(index) {
-      cancelAutoplay();
-      showPlate(index, true);
-      syncRuntime();
-    }
-
-    dots.forEach(function (dot, index) {
-      listen(dot, 'click', function () { choosePlate(index); });
-    });
-    listen(previous, 'click', function () { choosePlate(current - 1); });
-    listen(next, 'click', function () { choosePlate(current + 1); });
-    listen(controls, 'pointerdown', cancelAutoplay);
-    listen(controls, 'keydown', cancelAutoplay);
-    listen(controls, 'focusin', cancelAutoplay);
-    listen(document, 'visibilitychange', syncRuntime);
-
-    listenToQuery(reducedQuery, function () {
-      if (isReduced()) cancelAutoplay();
-      syncRuntime();
-    });
-    listenToQuery(desktopQuery, function () {
-      inViewport = isOnScreen();
-      syncRuntime();
-    });
-
-    if (window.IntersectionObserver) {
-      var observer = new IntersectionObserver(function (entries) {
-        if (!entries.length) return;
-        inViewport = entries[0].isIntersecting && entries[0].intersectionRatio > 0;
-        syncRuntime();
-      }, { threshold: 0.12 });
-      observer.observe(figure);
-      cleanups.push(function () { observer.disconnect(); });
-    } else {
-      var checkViewport = function () {
-        inViewport = isOnScreen();
-        syncRuntime();
-      };
-      listen(window, 'scroll', checkViewport, { passive: true });
-      listen(window, 'resize', checkViewport);
-      checkViewport();
-    }
-
-    function cleanup() {
-      if (disposed) return;
-      disposed = true;
-      clearTimer(false);
-      while (cleanups.length) cleanups.pop()();
-      figure.removeAttribute('data-autoplay');
-      figure.setAttribute('data-motion-paused', 'true');
-    }
-
-    listen(window, 'pagehide', function (event) {
-      if (!event.persisted) cleanup();
-    });
-    showPlate(current, false);
-    syncRuntime();
-  }
-
   function initFadeObserver() {
     var prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var visibleEls = document.querySelectorAll('.reveal, .fade-in, .ascii-rule, .toc-row');
@@ -698,9 +584,17 @@
     }
   }
 
+  function formatCount(value) {
+    return (Number(value) || 0).toLocaleString('en');
+  }
+
+  function countLabel(value, singular, plural) {
+    return formatCount(value) + ' ' + (Number(value) === 1 ? singular : plural);
+  }
+
   function escapeHtml(str) {
     var div = document.createElement('div');
     div.textContent = str == null ? '' : str;
-    return div.innerHTML;
+    return div.innerHTML.replace(/"/g, '&quot;');
   }
 })();

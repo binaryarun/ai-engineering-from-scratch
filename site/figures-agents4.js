@@ -41,8 +41,10 @@
     for (i = 0; i < 3; i++) {
       var s = stores[i];
       var b = svgEl('rect', { x: 210, y: s.y, width: 110, height: 40, rx: '5', fill: 'var(--bg-surface,#eee)', stroke: 'var(--rule-soft,#ddd)', 'stroke-width': '1.5' });
-      b.appendChild(anim('stroke', 'var(--rule-soft,#ddd);var(--blueprint,#3553ff);var(--rule-soft,#ddd)', '3s', { begin: (i * 0.4) + 's' }));
       svg.appendChild(b);
+      var ring = svgEl('rect', { x: 210, y: s.y, width: 110, height: 40, rx: '5', fill: 'none', stroke: 'var(--blueprint,#3553ff)', 'stroke-width': '1.5', opacity: '0' });
+      ring.appendChild(anim('opacity', '0;1;0', '3s', { begin: (i * 0.4) + 's' }));
+      svg.appendChild(ring);
       svg.appendChild(txt(265, s.y + 17, s.name, '11', 'var(--blueprint,#3553ff)'));
       svg.appendChild(txt(265, s.y + 31, s.sub, '8', 'var(--ink-mute,#777)'));
       var into = svgEl('line', { x1: 104, y1: 115, x2: 210, y2: s.y + 20, stroke: 'var(--ink-soft,#555)', 'stroke-width': '1.4', 'stroke-dasharray': '5 4' });
@@ -58,8 +60,10 @@
       svg.appendChild(txt(355, s.y + 17, 'w ' + s.w, '8', 'var(--ink-mute,#777)'));
     }
     var fuse = svgEl('rect', { x: 420, y: 95, width: 76, height: 40, rx: '5', fill: 'var(--bg-surface,#eee)', stroke: 'var(--blueprint,#3553ff)', 'stroke-width': '1.5' });
-    fuse.appendChild(anim('fill', 'var(--bg-surface,#eee);var(--blueprint,#3553ff);var(--bg-surface,#eee)', '3s', { begin: '2.2s' }));
     svg.appendChild(fuse);
+    var fused = svgEl('rect', { x: 420, y: 95, width: 76, height: 40, rx: '5', fill: 'var(--blueprint,#3553ff)', stroke: 'var(--blueprint,#3553ff)', 'stroke-width': '1.5', opacity: '0' });
+    fused.appendChild(anim('opacity', '0;1;0', '3s', { begin: '2.2s' }));
+    svg.appendChild(fused);
     svg.appendChild(txt(458, 119, 'fuse', '11', 'var(--ink,#1a1a1a)'));
     svg.appendChild(txt(260, 232, 'score = relevance + importance + recency, weighted sum', '10', 'var(--ink-mute,#777)'));
     shell(host, 'HYBRID MEMORY', 'one query, three stores',
@@ -95,8 +99,10 @@
     for (i = 0; i < 3; i++) {
       var y = 70 + i * 50;
       var b = svgEl('rect', { x: 350, y: y, width: 110, height: 34, rx: '4', fill: 'var(--bg-surface,#eee)', stroke: 'var(--rule-soft,#ddd)', 'stroke-width': '1.5' });
-      b.appendChild(anim('fill', 'var(--bg-surface,#eee);var(--blueprint,#3553ff);var(--bg-surface,#eee)', '3s', { begin: (i * 0.6) + 's' }));
       svg.appendChild(b);
+      var lit = svgEl('rect', { x: 350, y: y, width: 110, height: 34, rx: '4', fill: 'var(--blueprint,#3553ff)', stroke: 'var(--rule-soft,#ddd)', 'stroke-width': '1.5', opacity: '0' });
+      lit.appendChild(anim('opacity', '0;1;0', '3s', { begin: (i * 0.6) + 's' }));
+      svg.appendChild(lit);
       svg.appendChild(txt(405, y + 21, steps[i], '10', 'var(--ink,#1a1a1a)'));
       if (i < 2) {
         var ar = svgEl('line', { x1: 405, y1: y + 34, x2: 405, y2: y + 50, stroke: 'var(--ink-soft,#555)', 'stroke-width': '1.4', 'stroke-dasharray': '4 3' });
@@ -200,16 +206,20 @@
     for (i = 0; i < tests.length; i++) {
       var t = tests[i];
       var dot = svgEl('circle', { cx: 205, cy: t.y + 10, r: '6', fill: 'var(--rule-soft,#ddd)', stroke: 'var(--ink-mute,#777)', 'stroke-width': '1' });
-      dot.appendChild(anim('fill', 'var(--rule-soft,#ddd);var(--blueprint,#3553ff)', '4s', { begin: t.begin, fill: 'freeze' }));
       svg.appendChild(dot);
+      var pass = svgEl('circle', { cx: 205, cy: t.y + 10, r: '6', fill: 'var(--blueprint,#3553ff)', stroke: 'var(--ink-mute,#777)', 'stroke-width': '1', opacity: '0' });
+      pass.appendChild(anim('opacity', '0;1', '4s', { begin: t.begin, fill: 'freeze' }));
+      svg.appendChild(pass);
       svg.appendChild(txt(222, t.y + 14, t.lab, '9', 'var(--ink-soft,#555)', 'start'));
       var chk = svgEl('path', { d: 'M202 ' + (t.y + 10) + ' l3 3 l5 -6', fill: 'none', stroke: 'var(--bg,#fafaf5)', 'stroke-width': '1.6', opacity: '0' });
       chk.appendChild(anim('opacity', '0;1', '0.3s', { begin: t.begin, fill: 'freeze' }));
       svg.appendChild(chk);
     }
     var gate = svgEl('rect', { x: 390, y: 95, width: 100, height: 46, rx: '6', fill: 'var(--bg-surface,#eee)', stroke: 'var(--warn,#b8870f)', 'stroke-width': '1.5' });
-    gate.appendChild(anim('stroke', 'var(--warn,#b8870f);var(--blueprint,#3553ff)', '4s', { begin: '2.6s', fill: 'freeze' }));
     svg.appendChild(gate);
+    var passed = svgEl('rect', { x: 390, y: 95, width: 100, height: 46, rx: '6', fill: 'none', stroke: 'var(--blueprint,#3553ff)', 'stroke-width': '1.5', opacity: '0' });
+    passed.appendChild(anim('opacity', '0;1', '4s', { begin: '2.6s', fill: 'freeze' }));
+    svg.appendChild(passed);
     var res = txt(440, 122, 'RESOLVED', '10', 'var(--ink,#1a1a1a)');
     svg.appendChild(res);
     var g2 = svgEl('line', { x1: 335, y1: 118, x2: 390, y2: 118, stroke: 'var(--ink-soft,#555)', 'stroke-width': '1.6', 'stroke-dasharray': '5 4' });
@@ -223,7 +233,7 @@
 
   // -- ae-agent-human-gap: two bars closing as the agent line climbs ----------
   function agentHumanGap(host) {
-    var W = 520, H = 240, PAD = 44, base = 200;
+    var W = 520, H = 256, PAD = 44, base = 200;
     var svg = svgEl('svg', { viewBox: '0 0 ' + W + ' ' + H });
     svg.appendChild(svgEl('line', { x1: PAD, y1: base, x2: W - 20, y2: base, stroke: 'var(--rule-soft,#ddd)', 'stroke-width': '1' }));
     svg.appendChild(svgEl('line', { x1: PAD, y1: 30, x2: PAD, y2: base, stroke: 'var(--rule-soft,#ddd)', 'stroke-width': '1' }));
@@ -240,7 +250,7 @@
     svg.appendChild(txt(x0, base + 16, '2023', '9', 'var(--ink-mute,#777)'));
     svg.appendChild(txt(x1, base + 16, '2026', '9', 'var(--ink-mute,#777)'));
     svg.appendChild(txt(x0 + 4, y0 - 10, '14%', '9', 'var(--blueprint,#3553ff)', 'start'));
-    svg.appendChild(txt(260, 222, 'gap narrows, failure modes stay: grounding and operational knowledge', '10', 'var(--ink-mute,#777)'));
+    svg.appendChild(txt(260, 240, 'gap narrows, failure modes stay: grounding and operational knowledge', '10', 'var(--ink-mute,#777)'));
     shell(host, 'AGENT vs HUMAN', 'the gap is closing',
       svg,
       'At release WebArena and OSWorld showed a wide gap: the best agent near 14% where humans sit around 78%. The blue line is climbing year over year, but the two failure modes have not changed. Agents still miss GUI grounding (where to click) and operational knowledge (what the task actually requires), so the score rises faster than reliability.');
@@ -248,8 +258,9 @@
 
   // -- ae-genai-span-tree: nested OTel spans drawing in parent-child order ----
   function genaiSpanTree(host) {
-    var W = 520, H = 240;
+    var W = 520, H = 250;
     var svg = svgEl('svg', { viewBox: '0 0 ' + W + ' ' + H });
+    host.setAttribute('data-static-time', '3.5');
     var spans = [
       { x: 40, w: 440, y: 40, lab: 'invoke_agent  CLIENT', begin: '0s', kind: 'agent' },
       { x: 80, w: 200, y: 80, lab: 'execute_tool  search', begin: '0.6s', kind: 'tool' },
@@ -268,7 +279,7 @@
       svg.appendChild(bar);
       var t = txt(s.x + 8, s.y + 16, s.lab, '9', ink, 'start');
       t.setAttribute('opacity', '0');
-      t.appendChild(anim('opacity', '0;1', '0.4s', { begin: s.begin, fill: 'freeze' }));
+      t.appendChild(anim('opacity', '0;1', '0.4s', { begin: (parseFloat(s.begin) + 0.5) + 's', fill: 'freeze' }));
       svg.appendChild(t);
       if (i > 0) {
         var px = spans[i].x - 18;
@@ -277,7 +288,7 @@
         svg.appendChild(conn);
       }
     }
-    svg.appendChild(txt(260, 230, 'one schema: agent > tool > model, parent-child by convention', '10', 'var(--ink-mute,#777)'));
+    svg.appendChild(txt(260, 242, 'one schema: agent > tool > model, parent-child by convention', '10', 'var(--ink-mute,#777)'));
     shell(host, 'GENAI SPAN TREE', 'standard telemetry, nested',
       svg,
       'OpenTelemetry\'s GenAI conventions give every vendor one schema. An invoke_agent span is the root; each execute_tool span hangs off it; each model chat span hangs off the tool that called it. Because the names and parent-child links are standardized, the same trace reads the same way in Datadog, Grafana, Jaeger, or Honeycomb.');
