@@ -57,7 +57,7 @@ Learning AI engineering for research. Build goal: not sure yet.
 | 2026-10-11 | 1.05 Chain Rule & Autodiff | - | Core ideas covered (blame backward, Value object, += and zeroing grads, one-knob walk, XOR training). autodiff.py and exercises pending; notes in notes/phase-01-math-foundations.md |
 | 2026-10-27 | 1.06 Probability and Distributions | - | Core ideas covered (probability as sureness, conditional, uniform/normal, softmax, cross-entropy, sampling). probability.py and exercises pending; notes in notes/phase-01-math-foundations.md |
 | 2026-11-26 | 1.07 Bayes' Theorem | - | Core ideas covered (prior/evidence/posterior, crowd-counting method, sequential updating, Naive Bayes spam idea). MLE vs MAP, smoothing, Beta-Binomial and code pending; notes in notes/phase-01-math-foundations.md |
-
+| 2026-11-27 | 1.08 Optimization | - | Core ideas covered (loss landscape, SGD, momentum, Adam, schedules). Code pending; notes in notes/phase-01-math-foundations.md |
 ## Review queue
 - 0.04 APIs & Keys (get an API key before Phase 11)
 - 0.07 Docker for AI (install Docker Desktop and run Qdrant before the RAG lessons)
@@ -67,3 +67,4 @@ Learning AI engineering for research. Build goal: not sure yet.
 - 1.05 Chain Rule & Autodiff (run autodiff.py, do the 4 exercises during practical work)
 - 1.06 Probability and Distributions (run probability.py, skim Poisson/CLT/log probabilities, do exercises)
 - 1.07 Bayes' Theorem (run the code, learn MLE vs MAP, Laplace smoothing, Beta-Binomial, do exercises)
+- 1.08 Optimization (run the lesson code, skim RMSProp and convexity, do exercises)

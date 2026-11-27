@@ -374,3 +374,14 @@ Backward walk: slope = 2*error (square step) times 2 (the box count). Each round
 - Learning-rate schedule: big strides early, smaller later, like slowing down to park; warm-up at the start.
 - Mistakes: reversed good/bad of mini-batches; mixed up which knob gets the smaller stride.
 - Still to do: run the lesson code, skim any details not covered (e.g. RMSProp, convexity).
+
+## Lesson 1.08 Optimization (core ideas covered)
+
+- Training is walking downhill in fog; height is the loss.
+- Hard parts: stride size, local minima vs global minimum, flat patches, saddle points, narrow gorge zigzag.
+- SGD: use a small random mini-batch per step; fast but noisy.
+- Momentum: keep part of the previous direction (heavy rolling ball); side bounces cancel, forward push builds.
+- Adam: momentum plus a personal stride per knob (touchy knob gets smaller steps, steady knob bigger).
+- Learning-rate schedule: big strides early, smaller later, like slowing down to park; warm-up at the start.
+- Mistakes: reversed good/bad of mini-batches; mixed up which knob gets the smaller stride.
+- Still to do: run the lesson code, skim details not covered (e.g. RMSProp, convexity).
